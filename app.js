@@ -51,3 +51,81 @@ window.addEventListener('scroll', () => {
         header.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
     }
 });
+
+// Image Lightbox Modal Controller
+const imageModal = document.getElementById('imageModal');
+const modalImg = document.getElementById('modalImg');
+const modalCaption = document.getElementById('modalCaption');
+const modalClose = document.getElementById('modalClose');
+const modalBackdrop = document.querySelector('.modal-backdrop');
+
+function openImageModal(imgSrc, titleText, altText) {
+    if (!imageModal || !modalImg) return;
+
+    modalImg.src = imgSrc;
+    modalImg.alt = altText || titleText || 'Project screenshot preview';
+
+    if (modalCaption) {
+        modalCaption.textContent = titleText || altText || '';
+        modalCaption.style.display = (titleText || altText) ? 'block' : 'none';
+    }
+
+    imageModal.removeAttribute('hidden');
+    // Force DOM reflow to trigger smooth CSS transition
+    void imageModal.offsetWidth;
+    imageModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    if (modalClose) {
+        modalClose.focus();
+    }
+}
+
+function closeImageModal() {
+    if (!imageModal) return;
+
+    imageModal.classList.remove('active');
+    document.body.style.overflow = '';
+
+    setTimeout(() => {
+        if (!imageModal.classList.contains('active')) {
+            imageModal.setAttribute('hidden', '');
+            if (modalImg) modalImg.src = '';
+        }
+    }, 300);
+}
+
+// Attach click listeners to all project card images
+document.querySelectorAll('.project-card .project-img').forEach(cardImg => {
+    cardImg.setAttribute('title', 'Click to view full image');
+
+    cardImg.addEventListener('click', (e) => {
+        e.preventDefault();
+        const img = cardImg.querySelector('img');
+        if (!img) return;
+
+        const card = cardImg.closest('.project-card');
+        const titleEl = card ? card.querySelector('.project-content h3') : null;
+        const title = titleEl ? titleEl.textContent.trim() : (img.alt || '');
+
+        openImageModal(img.src, title, img.alt);
+    });
+});
+
+// Close when clicking close button
+if (modalClose) {
+    modalClose.addEventListener('click', closeImageModal);
+}
+
+// Close when clicking on backdrop
+if (modalBackdrop) {
+    modalBackdrop.addEventListener('click', closeImageModal);
+}
+
+// Close when pressing Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && imageModal && imageModal.classList.contains('active')) {
+        closeImageModal();
+    }
+});
+
